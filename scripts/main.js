@@ -19,15 +19,28 @@ const renderCards = (array) => {
 // .findIndex() & (.includes() - string method)
 const toggleCart = (event) => {
   if (event.target.id.includes("fav-btn")) {
-   console.log('Clicked Fav btn')
+    const [, id] = event.target.id.split("--")
+    
+    const index = referenceList.findIndex(taco => taco.id === Number(id))
+  referenceList[index].inCart = !referenceList[index].inCart
+  cartTotal();
+  renderCards(referenceList);
   }
 }
 
 // SEARCH
 // .filter()
 const search = (event) => {
-  const eventLC = event.target.value.toLowerCase();
-  console.log(eventLC)
+  console.log(event);
+  const userInput = event.target.value.toLowerCase();
+  const searchResult = referenceList.filter(result => 
+    result.title.toLowerCase().includes(userInput) ||
+    result.author.toLowerCase().includes(userInput) ||
+    result.description.toLowerCase().includes(userInput)
+  )
+
+  renderCards(searchResult);
+
 }
 
 // BUTTON FILTER
@@ -63,7 +76,7 @@ const buttonFilter = (event) => {
     <tbody>
     `;
     
-    productList().forEach(item => {
+    productList().sort((a, b) => a.type.localeCompare(b.type)).forEach(item => {
       table += tableRow(item);
     });
 
@@ -77,14 +90,27 @@ const buttonFilter = (event) => {
 // CALCULATE CART TOTAL
 // .reduce() & .some()
 const cartTotal = () => {
-  const total = 0
+  const cart = referenceList.filter(taco => taco.inCart);
+  const total = cart.reduce((value1, value2) => value1 + value2.price, 0);
+  const free = cart.some(taco => taco.price <= 0);
   document.querySelector("#cartTotal").innerHTML = total.toFixed(2);
+
+  if (free) {
+    document.querySelector("#includes-free").innerHTML = "INCLUDES FREE ITEMS"
+  } else {
+    document.querySelector("#includes-free").innerHTML = ""
+  }
 }
 
 // RESHAPE DATA TO RENDER TO DOM
 // .map()
 const productList = () => {
-  return [{ title: "SAMPLE TITLE", price: 45.00, type: "SAMPLE TYPE" }]
+  return referenceList.map(item => ({
+    title: item.title, 
+    price: item.price, 
+    type: item.type
+  }));
+  // return [{ title: "SAMPLE TITLE", price: 45.00, type: "SAMPLE TYPE" }]
 }
 
 
